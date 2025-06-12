@@ -16,22 +16,30 @@ export default function AdminLogin() {
     setIsLoading(true);
     setError('');
 
+    console.log('🔐 Login attempt:', { email });
+
     try {
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
+        callbackUrl: '/admin/dashboard',
       });
 
+      console.log('🔑 SignIn result:', result);
+
       if (result?.error) {
+        console.log('❌ SignIn error:', result.error);
         setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+      } else if (result?.ok) {
+        console.log('✅ SignIn successful, redirecting...');
+        // Force a page refresh to ensure session is loaded
+        window.location.href = '/admin/dashboard';
       } else {
-        const session = await getSession();
-        if (session) {
-          router.push('/admin/dashboard');
-        }
+        setError('حدث خطأ غير متوقع');
       }
-    } catch {
+    } catch (error) {
+      console.error('❌ Login error:', error);
       setError('حدث خطأ أثناء تسجيل الدخول');
     } finally {
       setIsLoading(false);

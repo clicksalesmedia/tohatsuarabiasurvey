@@ -9,6 +9,10 @@ const options = {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
+  family: 4, // Use IPv4, skip trying IPv6
+  tls: true,
+  tlsAllowInvalidCertificates: false,
+  tlsAllowInvalidHostnames: false,
 };
 
 let client: MongoClient;
@@ -37,6 +41,37 @@ if (process.env.NODE_ENV === 'development') {
 export default clientPromise;
 
 export async function getDatabase(): Promise<Db> {
-  const client = await clientPromise;
-  return client.db(process.env.MONGODB_DB);
+  try {
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+    
+    // Test the connection
+    await db.admin().ping();
+    console.log('✅ MongoDB connection successful');
+    
+    return db;
+  } catch (error) {
+    console.error('❌ MongoDB connection failed:', error);
+    
+    // Fallback: Try direct connection with different SSL settings
+    try {
+      console.log('🔄 Attempting fallback connection...');
+      const fallbackClient = new MongoClient(uri, {
+        ...options,
+        tls: true,
+        tlsInsecure: true, // Less strict for Vercel
+        directConnection: false,
+      });
+      
+      await fallbackClient.connect();
+      const db = fallbackClient.db(process.env.MONGODB_DB);
+      await db.admin().ping();
+      
+      console.log('✅ Fallback MongoDB connection successful');
+      return db;
+    } catch (fallbackError) {
+      console.error('❌ Fallback connection also failed:', fallbackError);
+      throw new Error(`MongoDB connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 } 
