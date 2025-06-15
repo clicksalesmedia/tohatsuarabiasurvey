@@ -47,6 +47,41 @@ export default function Home() {
         alert('يرجى اختيار إجابة للمتابعة');
         return false;
       }
+      
+      // Check if "غير ذلك" (Other) is selected and requires text input
+      if (stepData === 'other') {
+        if (currentStep === 3) {
+          // Step 3: Marine Experience
+          if (!formData.experienceOther || !formData.experienceOther.trim()) {
+            alert('يرجى كتابة تفاصيل "غير ذلك" للمتابعة');
+            return false;
+          }
+        } else if (currentStep === 4) {
+          // Step 4: Tohatsu Knowledge
+          if (!formData.knowledgeOther || !formData.knowledgeOther.trim()) {
+            alert('يرجى كتابة تفاصيل "غير ذلك" للمتابعة');
+            return false;
+          }
+        }
+      }
+    } else if (currentStep === 5) {
+      // Step 5: Engine Power validation
+      const selectedPowers = formData.powers || [];
+      if (selectedPowers.includes('other')) {
+        if (!formData.powerOther || !formData.powerOther.trim()) {
+          alert('يرجى كتابة تفاصيل "غير ذلك" للمتابعة');
+          return false;
+        }
+      }
+    } else if (currentStep === 6) {
+      // Step 6: Purchase Factors validation
+      const selectedFactors = formData.factors || [];
+      if (selectedFactors.includes('other')) {
+        if (!formData.factorsOther || !formData.factorsOther.trim()) {
+          alert('يرجى كتابة تفاصيل "غير ذلك" للمتابعة');
+          return false;
+        }
+      }
     } else if (currentStep === 7) {
       // For personal information step
       const required = ['fullName', 'email', 'city', 'phone'];
